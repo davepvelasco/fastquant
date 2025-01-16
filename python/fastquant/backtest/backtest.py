@@ -7,32 +7,32 @@ from __future__ import (
     print_function,
     unicode_literals,
 )
+
+import time
 import warnings
+from collections.abc import Iterable
 
 # Import modules
 import backtrader as bt
-import backtrader.feeds as btfeed
 import backtrader.analyzers as btanalyzers
-import pandas as pd
+import backtrader.feeds as btfeed
 import numpy as np
-from collections.abc import Iterable
-import time
-from pandas.api.types import is_numeric_dtype
-
+import pandas as pd
 from backtrader import CommInfoBase
-
-# Import backtest variables
-from fastquant.config import (
-    INIT_CASH,
-    COMMISSION_PER_TRANSACTION,
-    GLOBAL_PARAMS,
-    DEFAULT_PANDAS,
-)
-from fastquant.strategies.mappings import STRATEGY_MAPPING
+from pandas.api.types import is_numeric_dtype
 
 # Other backtest components
 from fastquant.backtest.data_prep import initalize_data
 from fastquant.backtest.post_backtest import analyze_strategies, plot_results
+
+# Import backtest variables
+from fastquant.config import (
+    COMMISSION_PER_TRANSACTION,
+    DEFAULT_PANDAS,
+    GLOBAL_PARAMS,
+    INIT_CASH,
+)
+from fastquant.strategies.mappings import STRATEGY_MAPPING
 
 strat_docs = "\nExisting strategies:\n\n" + "\n".join(
     [key + "\n" + value.__doc__ for key, value in STRATEGY_MAPPING.items()]
@@ -77,6 +77,7 @@ def backtest(
     data_kwargs={},
     plot_kwargs={},
     fig=None,
+    riskfreerate=0.01,
     **kwargs,
 ):
     """Backtest financial data with a specified trading strategy
@@ -187,7 +188,7 @@ def backtest(
 
     # Apply Total, Average, Compound and Annualized Returns calculated using a logarithmic approach
     cerebro.addanalyzer(btanalyzers.Returns, _name="returns")
-    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name="mysharpe")
+    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name="mysharpe", riskfreerate=riskfreerate)
     cerebro.addanalyzer(btanalyzers.DrawDown, _name="drawdown")
     cerebro.addanalyzer(btanalyzers.TimeDrawDown, _name="timedraw")
     cerebro.addanalyzer(
